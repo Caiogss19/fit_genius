@@ -56,7 +56,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidUserProfile(incoming());
       allow update: if isOwner(userId) && isValidUserProfile(incoming()) && 
-                    incoming().diff(existing()).affectedKeys().hasOnly(['name', 'age', 'weight', 'height', 'gender', 'activityLevel', 'goal', 'targetCalories', 'targetProtein', 'targetCarbs', 'targetFat']);
+                    incoming().diff(existing()).affectedKeys().hasOnly(['name', 'age', 'weight', 'height', 'gender', 'activityLevel', 'goal', 'targetCalories', 'targetProtein', 'targetCarbs', 'targetFat', 'updatedAt']);
 
       match /workouts/{workoutId} {
         allow list: if isOwner(userId);
