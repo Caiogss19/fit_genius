@@ -1,0 +1,11 @@
+{
+  "name": "FitGenius",
+  "description": "Seu companheiro completo para treinos, dieta e cálculo de calorias com IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "Treino Personalizado",
+    "Calculadora TDEE",
+    "Acompanhamento de Macros",
+    "Gráficos de Progresso"
+  ]
+}

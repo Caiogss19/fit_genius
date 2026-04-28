@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['name', 'weight', 'height', 'goal']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.weight is number && data.weight > 0 && data.weight < 500 &&
+             data.height is number && data.height > 0 && data.height < 300 &&
+             data.goal in ['lose', 'maintain', 'gain'];
+    }
+
+    function isValidWorkout(data) {
+      return data.keys().hasAll(['name', 'date', 'exercises']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.exercises is list && data.exercises.size() <= 50;
+    }
+
+    function isValidDailyIntake(data) {
+      return data.keys().hasAll(['date', 'items']) &&
+             data.items is list && data.items.size() <= 100;
+    }
+
+    // --- Collection Routes ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isValidUserProfile(incoming()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['name', 'age', 'weight', 'height', 'gender', 'activityLevel', 'goal', 'targetCalories', 'targetProtein', 'targetCarbs', 'targetFat']);
+
+      match /workouts/{workoutId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(workoutId);
+        allow create: if isOwner(userId) && isValidId(workoutId) && isValidWorkout(incoming());
+        allow update: if isOwner(userId) && isValidId(workoutId) && isValidWorkout(incoming());
+        allow delete: if isOwner(userId) && isValidId(workoutId);
+      }
+
+      match /diet/{dateId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(dateId);
+        allow write: if isOwner(userId) && isValidId(dateId) && isValidDailyIntake(incoming());
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User physical data and goals",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "age": { "type": "integer" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "activityLevel": { "type": "string" },
+        "goal": { "type": "string" },
+        "targetCalories": { "type": "integer" },
+        "targetProtein": { "type": "integer" },
+        "targetCarbs": { "type": "integer" },
+        "targetFat": { "type": "integer" }
+      },
+      "required": ["name", "weight", "height", "goal"]
+    },
+    "Workout": {
+      "title": "Workout session",
+      "description": "A single training session with exercises",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "exercises": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "sets": { "type": "integer" },
+              "reps": { "type": "integer" },
+              "weight": { "type": "number" },
+              "completed": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "FoodItem": {
+      "title": "Food Item",
+      "description": "A single logged food item",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "calories": { "type": "integer" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "amount": { "type": "string" }
+      }
+    },
+    "DailyIntake": {
+      "title": "Daily Intake",
+      "description": "Summary of food consumed in a day",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "items": { "type": "array", "items": { "$ref": "#/entities/FoodItem" } }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Public and private profile data for the user"
+    },
+    "/users/{userId}/workouts/{workoutId}": {
+      "schema": "Workout",
+      "description": "Training history for the user"
+    },
+    "/users/{userId}/diet/{dateId}": {
+      "schema": "DailyIntake",
+      "description": "Nutritional logging for specific dates"
+    }
+  }
+}
