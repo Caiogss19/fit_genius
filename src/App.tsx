@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Dumbbell, Utensils, User as UserIcon, Home, LogIn, Award } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { toast } from "sonner";
 import { auth, signInWithGoogle } from "./lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
