@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Dumbbell, Utensils, User as UserIcon, Home, LogIn } from "lucide-react";
+import { Dumbbell, Utensils, User as UserIcon, Home, LogIn, Award } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,8 +10,9 @@ import Dashboard from "./components/Dashboard";
 import WorkoutTracker from "./components/WorkoutTracker";
 import DietTracker from "./components/DietTracker";
 import Profile from "./components/Profile";
-import { Card, CardHeader, CardContent } from "./components/ui/card";
-import { Button } from "./components/ui/button";
+import Trophies from "./components/Trophies";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -30,6 +31,7 @@ export default function App() {
     { id: "dashboard", label: "Geral", icon: Home },
     { id: "workouts", label: "Treino", icon: Dumbbell },
     { id: "diet", label: "Dieta", icon: Utensils },
+    { id: "trophies", label: "Troféus", icon: Award },
     { id: "profile", label: "Perfil", icon: UserIcon },
   ];
 
@@ -122,9 +124,10 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "dashboard" && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === "workouts" && <WorkoutTracker />}
           {activeTab === "diet" && <DietTracker />}
+          {activeTab === "trophies" && <Trophies />}
           {activeTab === "profile" && <Profile />}
         </motion.div>
       </main>

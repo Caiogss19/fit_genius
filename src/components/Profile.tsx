@@ -12,6 +12,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { calculateTDEE, calculateMacros } from "@/lib/calculations";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
+import { ACHIEVEMENTS } from "@/lib/achievements";
 
 export default function Profile() {
   const user = auth.currentUser;
@@ -19,6 +20,7 @@ export default function Profile() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userAchievements, setUserAchievements] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     age: "25",
@@ -41,6 +43,7 @@ export default function Profile() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
+          setUserAchievements(data.achievements || []);
           setFormData({
             age: data.age?.toString() || "25",
             weight: data.weight?.toString() || "80",
@@ -263,30 +266,6 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-500" />
-              Conquistas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { label: "Sequência de 7 dias", icon: "🔥", desc: "Você treinou 7 dias seguidos!" },
-              { label: "Bateu meta de Proteína", icon: "🍗", desc: "10 dias seguidos batendo macros." },
-            ].map((award) => (
-              <div key={award.label} className="flex items-center gap-4 p-3 bg-muted rounded-xl">
-                <div className="text-2xl">{award.icon}</div>
-                <div>
-                  <h5 className="font-bold text-sm">{award.label}</h5>
-                  <p className="text-xs text-muted-foreground">{award.desc}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

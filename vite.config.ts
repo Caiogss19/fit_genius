@@ -2,11 +2,38 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'Fit Genius',
+          short_name: 'FitGenius',
+          description: 'Acompanhe seus treinos e dieta com IA.',
+          theme_color: '#F27D26',
+          background_color: '#000000',
+          display: 'standalone',
+          icons: [
+            {
+              src: 'https://via.placeholder.com/192/F27D26/FFFFFF?text=FG',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'https://via.placeholder.com/512/F27D26/FFFFFF?text=FG',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        }
+      })
+    ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },

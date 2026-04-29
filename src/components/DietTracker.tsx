@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ChevronLeft, ChevronRight, Apple, Trash2, Camera, Sparkles, Loader2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Apple, Trash2, Camera, Sparkles, Loader2, Copy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format, addDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -13,6 +13,7 @@ import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { GoogleGenAI, Type } from "@google/genai";
+import { unlockAchievement } from "@/lib/achievements";
 
 type FoodItem = {
   name: string;
@@ -79,8 +80,22 @@ export default function DietTracker() {
       const docRef = doc(db, "users", auth.currentUser.uid, "diet", dateStr);
       await setDoc(docRef, {
         date: dateStr,
-        items: newItems
-      });
+        items: newItems,
+        water: profileData?.water || 0 // Retain water if exists
+      }, { merge: true });
+
+      // Check achievement
+      const tCal = profileData?.targetCalories || 2400;
+      const tProt = profileData?.targetProtein || 160;
+      
+      const cal = newItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+      const prot = newItems.reduce((acc, item) => acc + (Number(item.protein) || 0), 0);
+
+      // Met within margin (calories +- 10%, protein >= 95%)
+      if (cal >= tCal * 0.9 && cal <= tCal * 1.1 && prot >= tProt * 0.95) {
+        unlockAchievement(auth.currentUser.uid, "macro_master");
+      }
+
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `users/${auth.currentUser?.uid}/diet/${dateStr}`);
       toast.error("Erro ao salvar refeição.");
@@ -115,6 +130,26 @@ export default function DietTracker() {
     setItems(updatedItems);
     await saveItems(updatedItems);
     toast.success("Refeição removida");
+  };
+
+  const handleRepeatPreviousDay = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const prevDateStr = format(subDays(currentDate, 1), "yyyy-MM-dd");
+      const docRef = doc(db, "users", auth.currentUser.uid, "diet", prevDateStr);
+      const docSnap = await getDoc(docRef);
+      if(docSnap.exists() && docSnap.data().items?.length > 0) {
+          const previousItems = docSnap.data().items;
+          const updatedItems = [...items, ...previousItems];
+          setItems(updatedItems);
+          await saveItems(updatedItems);
+          toast.success("Refeições copiadas do dia anterior!");
+      } else {
+          toast.error("Nenhuma refeição encontrada no dia anterior.");
+      }
+    } catch (e) {
+      toast.error("Erro ao buscar refeições anteriores.");
+    }
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,6 +352,16 @@ export default function DietTracker() {
               title="Reconhecimento por IA"
             >
               <Camera className="w-4 h-4" />
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-[#F27D26]/10 border-[#F27D26]/30 text-[#F27D26] hover:bg-[#F27D26]/20"
+              onClick={handleRepeatPreviousDay}
+              title="Copiar refeições do dia anterior"
+            >
+              <Copy className="w-4 h-4" />
             </Button>
 
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>

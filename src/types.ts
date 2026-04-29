@@ -12,6 +12,13 @@ export interface UserProfile {
   targetFat: number;
 }
 
+export interface ExerciseSet {
+  id: string;
+  reps: number;
+  weight: number;
+  completed: boolean;
+}
+
 export interface Exercise {
   id: string;
   name: string;
@@ -19,6 +26,7 @@ export interface Exercise {
   reps: number;
   weight?: number;
   completed: boolean;
+  detailedSets?: ExerciseSet[];
 }
 
 export interface Workout {
